@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terme mit mehreren Variablen aufstellen – Klasse 8</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f6f3ec; --card:#fffdf8; --ink:#1d2228; --muted:#5c6470; --line:#e2dccd;
+  --A:#0f766e; --A-soft:#e3f3f0;
+  --B:#3949ab; --B-soft:#e8eaf8;
+  --C:#a21caf; --C-soft:#f7e6f8;
+  --ok:#157a3c; --ok-soft:#e5f5ea; --bad:#b42318; --bad-soft:#fdecea; --warn:#9a5b06; --warn-soft:#fdf3e1;
+  --accent:var(--A); --accent-soft:var(--A-soft);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:"Atkinson Hyperlegible",system-ui,sans-serif; color:var(--ink); line-height:1.5; font-size:17px;
+  background:var(--paper);
+  background-image:linear-gradient(rgba(0,0,0,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.035) 1px,transparent 1px);
+  background-size:24px 24px;
+}
+.wrap{max-width:900px;margin:0 auto;padding:24px 18px 64px}
+h1,h2,h3,h4{font-family:"Bricolage Grotesque",sans-serif;line-height:1.15;margin:0}
+.mono,.term{font-family:"JetBrains Mono",ui-monospace,monospace}
+
+.head{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 24px;box-shadow:0 2px 0 var(--line)}
+.kicker{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.head h1{font-size:clamp(26px,4.4vw,38px);font-weight:800;margin:4px 0 10px}
+.head p{margin:0 0 14px;color:var(--muted)}
+.headrow{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.headrow label{font-weight:700;font-size:15px}
+.headrow input{font:inherit;padding:7px 10px;border:1.5px solid var(--line);border-radius:10px;background:#fff;min-width:200px}
+.progress{flex:1;min-width:220px}
+.bar{height:10px;border-radius:99px;background:#ece6d8;overflow:hidden}
+.bar>span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--A),var(--B),var(--C));transition:width .4s}
+.progress small{color:var(--muted)}
+
+.tabs{display:flex;gap:8px;margin:20px 0 14px;flex-wrap:wrap}
+.tab{font:inherit;font-weight:700;border:1.5px solid var(--line);background:var(--card);color:var(--ink);padding:9px 14px;border-radius:12px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.tab .dot{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.tab .cnt{font-size:13px;color:var(--muted);font-weight:400}
+.tab[aria-selected="true"]{border-color:var(--c);background:var(--c);color:#fff}
+.tab[aria-selected="true"] .cnt{color:rgba(255,255,255,.85)}
+.tab[aria-selected="true"] .dot{background:#fff}
+
+.intro{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--accent);border-radius:14px;padding:18px 20px;margin-bottom:18px}
+.intro h2{font-size:24px;color:var(--accent);margin-bottom:6px}
+.intro .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:12px 0}
+.intro .step{background:var(--accent-soft);border-radius:10px;padding:10px 12px;font-size:15px}
+.intro .step b{display:block;color:var(--accent);font-family:"Bricolage Grotesque",sans-serif}
+.example{border:1.5px dashed var(--accent);border-radius:10px;padding:10px 14px;font-size:15.5px}
+.example ol{margin:6px 0 0;padding-left:22px}
+.example .term{background:var(--accent-soft);padding:1px 6px;border-radius:6px}
+.merke{margin-top:10px;font-size:15px;color:var(--muted)}
+
+.task{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:18px;box-shadow:0 2px 0 var(--line)}
+.task.solved{border-color:#b9dfc6;box-shadow:0 2px 0 #b9dfc6}
+.task>header{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.num{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;color:#fff;background:var(--accent);border-radius:9px;padding:2px 9px;font-size:16px}
+.task h3{font-size:20px;flex:1}
+.badge{font-size:13px;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.badge.self{background:var(--ok-soft);color:var(--ok)}
+.badge.tip{background:var(--warn-soft);color:var(--warn)}
+.badge.sol{background:#eee;color:#555}
+.badge.bonus{background:#fff4c2;color:#7a5a00}
+.ctx{display:flex;gap:16px;align-items:flex-start}
+.ctx p{margin:0 0 8px;flex:1}
+.ctx svg{flex:0 0 auto;width:170px;height:auto}
+@media(max-width:560px){.ctx{flex-direction:column}.ctx svg{width:200px;align-self:center}}
+.ask{margin:4px 0 12px;font-size:17px}
+
+/* Schritte */
+.stepbox{border:1.5px solid var(--line);border-radius:13px;padding:14px 16px;margin-top:12px;background:#fff}
+.stepbox.done{border-color:#b9dfc6;background:#fbfefc}
+.stepbox.locked{background:#f6f3ec;color:#8a9099}
+.stepbox h4{font-size:17px;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.stepno{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:14px}
+.stepbox.done .stepno{background:var(--ok)}
+.stepbox.locked .stepno{background:#b8bcc2}
+.stepbox h4 .ok{color:var(--ok);font-size:14px;font-family:"Atkinson Hyperlegible";font-weight:700}
+.lockmsg{font-size:15px;margin:0}
+.sub{font-size:15px;color:var(--muted);margin:0 0 10px}
+.vrow{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.vrow input{width:52px;text-align:center;font-family:"JetBrains Mono",monospace;font-size:18px;padding:7px 4px;border:2px solid var(--line);border-radius:10px}
+.vrow select{font:inherit;font-size:16px;padding:7px 8px;border:2px solid var(--line);border-radius:10px;background:#fff;flex:1;min-width:230px;max-width:100%}
+.vrow input:focus,.vrow select:focus,.prow input:focus,.inrow input:focus{outline:none;border-color:var(--accent)}
+.vrow input:disabled,.vrow select:disabled,.prow input:disabled,.inrow input:disabled{background:#f3f7f4;color:var(--ink);opacity:1}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.chips span{background:var(--accent-soft);border-radius:10px;padding:3px 10px;font-size:15px}
+.chips b{font-family:"JetBrains Mono",monospace;color:var(--accent);margin-right:4px}
+.prow{display:grid;grid-template-columns:minmax(180px,1fr) minmax(180px,1.2fr) 28px;gap:8px;align-items:center;margin-bottom:6px}
+.prow label{font-size:15.5px}
+.prow input{font-family:"JetBrains Mono",monospace;font-size:17px;padding:7px 10px;border:2px solid var(--line);border-radius:10px;width:100%}
+.prow .mk{font-size:20px;text-align:center}
+.prow .pfb{grid-column:1/-1;font-size:15px;border-radius:8px;padding:6px 10px;margin:-2px 0 4px}
+@media(max-width:560px){.prow{grid-template-columns:1fr 28px}.prow label{grid-column:1/-1}}
+.inrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.inrow input{font-family:"JetBrains Mono",monospace;font-size:18px;padding:9px 12px;border:2px solid var(--line);border-radius:11px;flex:1;min-width:200px;background:#fff}
+.btn{font:inherit;font-weight:700;border:none;border-radius:11px;padding:9px 16px;cursor:pointer}
+.btn.check{background:var(--accent);color:#fff}
+.btn.check:hover{filter:brightness(1.08)}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.keys{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.keys button{font-family:"JetBrains Mono",monospace;font-size:16px;min-width:36px;padding:4px 8px;border:1.5px solid var(--line);background:#fff;border-radius:8px;cursor:pointer}
+.keys button:hover{border-color:var(--accent)}
+.fb{margin-top:10px;border-radius:10px;font-size:16px}
+.fb:not(:empty){padding:10px 14px}
+.ok-c{background:var(--ok-soft);color:#0f5129}
+.bad-c{background:var(--bad-soft);color:#7a1a12}
+.warn-c{background:var(--warn-soft);color:#6b4004}
+.note{display:block;margin-top:6px;font-size:15px;opacity:.92}
+.help{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.hbtn{font:inherit;font-size:14.5px;font-weight:700;border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:5px 13px;cursor:pointer;color:var(--ink)}
+.hbtn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.hbtn:disabled{cursor:not-allowed;color:#9aa0a8;background:#f4f1ea}
+.hbtn.open{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.box{margin-top:8px;border-radius:10px;padding:9px 13px;font-size:15.5px}
+.box.tipbox{background:#fff8e6;border:1px solid #f1dfae}
+.box.solbox{background:#eef6f1;border:1px solid #bfdcc9}
+.box .term{font-size:16.5px;background:#fff;padding:1px 7px;border-radius:6px;border:1px solid var(--line)}
+.box b.lab{display:block;font-family:"Bricolage Grotesque",sans-serif;margin-bottom:2px}
+.box ul{margin:4px 0 0;padding-left:20px}
+.remind{font-size:15px;color:var(--muted);margin:0 0 8px}
+.remind .term{color:var(--ink);background:var(--accent-soft);padding:1px 6px;border-radius:6px}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-bottom:16px}
+.panel h2{font-size:24px;margin-bottom:10px}
+table{border-collapse:collapse;width:100%;font-size:16px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+td.n{font-variant-numeric:tabular-nums}
+.verdict{display:flex;gap:16px;align-items:center;margin:14px 0;padding:14px 16px;border-radius:12px;background:var(--accent-soft)}
+.verdict .big{font-size:44px}
+.verdict h3{font-size:22px}
+.row-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.btn.danger{background:#fff;border:1.5px solid #e9b8b2;color:var(--bad)}
+.legend{font-size:14px;color:var(--muted);margin-top:10px}
+textarea.copyfallback{width:100%;height:180px;margin-top:10px;font-family:"JetBrains Mono",monospace;font-size:13px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="head">
+    <div class="kicker">Mathematik · Klasse 8 · Terme</div>
+    <h1>Terme mit mehreren Variablen aufstellen</h1>
+    <p>Übersetze Alltagssituationen in Terme – immer in drei Schritten: <b>Variablen festlegen</b>, <b>Teilterme aufstellen</b>, <b>Gesamtterm angeben</b>. Jeder Schritt wird geprüft. Wenn du nicht weiterkommst, helfen dir Tipps – die Lösung kannst du erst danach ansehen.</p>
+    <div class="headrow">
+      <label for="name">Name:</label><input id="name" placeholder="Vor- und Nachname" autocomplete="off">
+      <div class="progress"><div class="bar"><span id="pbar"></span></div><small id="ptext"></small></div>
+    </div>
+  </section>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <main id="main"></main>
+</div>
+
+<script>
+/* ================================================================== */
+/* Einstellungen                                                       */
+/* ================================================================== */
+const TIP2_DELAY = 30;  // Sekunden nach Tipp 1, bis Tipp 2 freigegeben wird
+const SOL_DELAY  = 30;  // Sekunden nach dem letzten Tipp, bis die Lösung freigegeben wird
+const KEY = 'terme-mehrere-variablen-v2';
+
+/* ================================================================== */
+/* Abbildungen (ohne Variablennamen – die legen die Schüler selbst fest) */
+/* ================================================================== */
+const T = (x,y,s,c,a='middle',fs=12) => `<text x="${x}" y="${y}" text-anchor="${a}" font-family="Atkinson Hyperlegible" font-size="${fs}" fill="${c}">${s}</text>`;
+const SVG = {
+  rect:(fill='#e3f3f0',stroke='#0f766e')=>`<svg viewBox="0 0 180 110" aria-hidden="true">
+    <rect x="12" y="12" width="120" height="70" fill="${fill}" stroke="${stroke}" stroke-width="2.5" rx="2"/>
+    ${T(72,100,'Länge',stroke)}${T(137,51,'Breite',stroke,'start')}</svg>`,
+  cuboid:(stroke='#3949ab',fill='#e8eaf8')=>`<svg viewBox="0 0 180 135" aria-hidden="true">
+    <polygon points="20,45 110,45 140,20 50,20" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+    <polygon points="110,45 140,20 140,85 110,110" fill="${fill}" stroke="${stroke}" stroke-width="2" opacity=".85"/>
+    <rect x="20" y="45" width="90" height="65" fill="#fff" stroke="${stroke}" stroke-width="2"/>
+    ${T(65,127,'Länge',stroke)}${T(128,108,'Breite',stroke,'start')}${T(16,80,'Höhe',stroke,'end')}</svg>`,
+  pond:`<svg viewBox="0 0 180 120" aria-hidden="true">
+    <rect x="25" y="10" width="130" height="80" fill="#e2f2dc" stroke="#a21caf" stroke-width="2.5"/>
+    <rect x="102" y="20" width="44" height="44" fill="#cfe6fb" stroke="#2d6fb3" stroke-width="2"/>
+    ${T(124,46,'Teich','#2d6fb3')}${T(124,78,'Seite','#2d6fb3',"middle",11)}
+    ${T(90,107,'Länge','#a21caf')}${T(22,54,'Breite','#a21caf','end')}</svg>`,
+  frame:`<svg viewBox="0 0 170 130" aria-hidden="true">
+    <rect x="15" y="8" width="130" height="100" fill="#d9c3a5" stroke="#7a5a2e" stroke-width="2"/>
+    <rect x="37" y="30" width="86" height="56" fill="#fff" stroke="#7a5a2e" stroke-width="1.5"/>
+    ${T(80,62,'Foto','#7a5a2e','middle',13)}
+    <line x1="15" y1="58" x2="37" y2="58" stroke="#a21caf" stroke-width="1.5"/>
+    <line x1="80" y1="8" x2="80" y2="30" stroke="#a21caf" stroke-width="1.5"/>
+    ${T(80,124,'Rahmen überall gleich breit','#a21caf')}</svg>`
+};
+
+/* ================================================================== */
+/* Aufgaben                                                            */
+/*  vars:     Standard-Variablen (intern) mit Bedeutung                */
+/*  distract: Auswahl-Optionen, die KEINE Variablen sind               */
+/*  parts:    Teilterme (intern in Standard-Variablen)                 */
+/*  answer:   Gesamtterm; Tipps/Lösungen werden automatisch auf die    */
+/*            von den Schülern gewählten Buchstaben umgeschrieben      */
+/* ================================================================== */
+const RES = 'Das ist das Ergebnis, das dein Term am Ende berechnen soll. Es ergibt sich aus den Variablen – es ist selbst keine Variable.';
+const PARTS = [
+{
+  id:'A', color:'--A', soft:'--A-soft', tab:'Teil A · 2 Variablen', title:'Teil A: Zwei Variablen',
+  lead:'In jeder Situation kommen zwei Größen vor, deren Wert nicht angegeben ist. Jede bekommt eine Variable. Die Teilterme bestehen aus Zahl · Variable; am Ende wird addiert oder subtrahiert.',
+  example:`Ein Heft kostet 2 €, ein Stift 1,50 €. Du kaufst einige Hefte und einige Stifte. Gesucht: der Preis in €.
+    <ol><li><b>Variablen:</b> <i>h</i> = Anzahl der Hefte, <i>s</i> = Anzahl der Stifte</li>
+    <li><b>Teilterme:</b> Preis der Hefte: <span class="term">2h</span> · Preis der Stifte: <span class="term">1,5s</span></li>
+    <li><b>Gesamtterm:</b> <span class="term">2h + 1,5s</span></li></ol>`,
+  tasks:[
+    {id:'A1', title:'Im Kino',
+     text:'Im Kino kostet eine Karte für Erwachsene 9 € und eine Karte für Kinder 6 €. Eine Gruppe kauft einige Erwachsenen- und einige Kinderkarten.',
+     ask:'den Gesamtpreis in €',
+     vars:{e:'Anzahl der Erwachsenenkarten', k:'Anzahl der Kinderkarten'},
+     distract:[{t:'Preis einer Erwachsenenkarte', w:'Der Preis steht fest (9 €). Feste Zahlen sind keine Variablen.'},{t:'Gesamtpreis', w:RES}],
+     parts:[{l:'Preis der Erwachsenenkarten (in €)', t:'9*e', s:'9 · e = 9e'},{l:'Preis der Kinderkarten (in €)', t:'6*k', s:'6 · k = 6k'}],
+     t2a:'Rechne zuerst mit Zahlen: Was kosten 3 Erwachsenenkarten? Schreibe die Rechnung auf – nicht nur das Ergebnis.',
+     t2b:'3 Erwachsenenkarten kosten 9 · 3 €. Bei <i>e</i> Karten sind es 9 · <i>e</i> €. Genauso bei den Kinderkarten.',
+     t3:'Der Gesamtpreis setzt sich aus den Kosten für beide Kartensorten zusammen. Wie verbindest du die Teilterme?',
+     answer:'9e+6k', show:'9e + 6k', explain:'Beide Teilterme werden addiert:',
+     probe:{e:3,k:2}, probeQ:'Was kosten 3 Erwachsenen- und 2 Kinderkarten wirklich?',
+     mistakes:[{t:'6e+9k', m:'Die Preise sind vertauscht: Erwachsenenkarten kosten 9 €, Kinderkarten 6 €.'},{t:'9e-6k', m:'Die Kinderkarten kosten zusätzlich Geld – sie werden nicht abgezogen.'}]},
+    {id:'A2', title:'Basketball',
+     text:'Mia trifft in einem Basketballspiel mehrmals mit einem Zweipunktewurf und mehrmals mit einem Dreipunktewurf.',
+     ask:'die Punktzahl, die Mia insgesamt erzielt',
+     vars:{z:'Anzahl der Zweipunktewürfe', d:'Anzahl der Dreipunktewürfe'},
+     distract:[{t:'Punkte für einen Dreipunktewurf', w:'Ein Dreier bringt immer 3 Punkte – das steht fest.'},{t:'Gesamtpunktzahl', w:RES}],
+     parts:[{l:'Punkte durch Zweipunktewürfe', t:'2*z', s:'2 · z = 2z'},{l:'Punkte durch Dreipunktewürfe', t:'3*d', s:'3 · d = 3d'}],
+     t2a:'Wie viele Punkte bekommt Mia für 4 Zweipunktewürfe? Welche Rechnung steckt dahinter?',
+     t2b:'<i>z</i> Zweipunktewürfe bringen 2 · <i>z</i> Punkte. Genauso bei den Dreipunktewürfen.',
+     t3:'Mia bekommt die Punkte aus beiden Wurfarten. Wie verbindest du die Teilterme?',
+     answer:'2z+3d', show:'2z + 3d', explain:'Punkte aus beiden Wurfarten zusammen:',
+     probe:{z:4,d:2}, probeQ:'Wie viele Punkte hat Mia bei 4 Zweiern und 2 Dreiern?',
+     mistakes:[{t:'z+d', m:'So zählst du nur die Treffer, nicht die Punkte.'}]},
+    {id:'A3', title:'Am Obststand',
+     text:'Ein Apfel kostet 0,40 €, eine Birne 0,55 €. Jonas kauft einige Äpfel und einige Birnen.',
+     ask:'den Preis, den Jonas bezahlen muss (in €)',
+     vars:{a:'Anzahl der Äpfel', b:'Anzahl der Birnen'},
+     distract:[{t:'Preis eines Apfels', w:'Der Preis steht fest (0,40 €).'},{t:'Gesamtpreis', w:RES}],
+     parts:[{l:'Preis der Äpfel (in €)', t:'0.4*a', s:'0,4 · a = 0,4a'},{l:'Preis der Birnen (in €)', t:'0.55*b', s:'0,55 · b = 0,55b'}],
+     t2a:'Kommazahlen funktionieren wie ganze Zahlen: Was kosten 5 Äpfel? Rechne 0,40 · 5.',
+     t2b:'<i>a</i> Äpfel kosten 0,4 · <i>a</i> €. Du kannst 0,4 oder 0,40 schreiben – beides ist richtig.',
+     t3:'Jonas bezahlt Äpfel und Birnen zusammen.',
+     answer:'0.4a+0.55b', show:'0,4a + 0,55b', explain:'Beide Teilterme werden addiert:',
+     probe:{a:5,b:2}, probeQ:'Was kosten 5 Äpfel und 2 Birnen?',
+     mistakes:[{t:'0.55a+0.4b', m:'Die Preise sind vertauscht: Äpfel kosten 0,40 €, Birnen 0,55 €.'}]},
+    {id:'A4', title:'Taschengeld',
+     text:'Lena hat Geld gespart – wie viel, wissen wir nicht. Im Schreibwarenladen kauft sie einige Hefte zu je 2 €.',
+     ask:'das Geld, das Lena danach noch übrig hat (in €)',
+     vars:{g:'gespartes Geld in €', h:'Anzahl der Hefte'},
+     distract:[{t:'Preis eines Heftes', w:'Ein Heft kostet immer 2 €.'},{t:'Restgeld', w:RES}],
+     parts:[{l:'Preis der Hefte (in €)', t:'2*h', s:'2 · h = 2h'}],
+     t2a:'Was kosten 3 Hefte? Welche Rechnung steckt dahinter?',
+     t2b:'<i>h</i> Hefte kosten 2 · <i>h</i> €.',
+     t3:'Lena hat am Anfang <i>g</i> €. Das Geld für die Hefte gibt sie aus. Wird es mehr oder weniger?',
+     answer:'g-2h', show:'g − 2h', explain:'Vom Ersparten wird der Preis der Hefte abgezogen:',
+     probe:{g:20,h:3}, probeQ:'Wie viel Geld bleibt, wenn Lena 20 € hat und 3 Hefte kauft?',
+     mistakes:[{t:'2h-g', m:'Die Reihenfolge stimmt nicht: Vom Ersparten wird etwas abgezogen – also mit <i>g</i> beginnen.'},{t:'g+2h', m:'Lena gibt Geld aus – das Geld wird weniger.'}]},
+    {id:'A5', title:'Rechteck', svg:()=>SVG.rect(),
+     text:'Von einem Rechteck sind die Länge und die Breite (in cm) nicht bekannt.',
+     ask:'den Umfang des Rechtecks (in cm)',
+     vars:{l:'Länge des Rechtecks in cm', b:'Breite des Rechtecks in cm'},
+     distract:[{t:'Anzahl der Seiten', w:'Ein Rechteck hat immer 4 Seiten.'},{t:'Umfang', w:RES}],
+     parts:[{l:'Länge der beiden langen Seiten zusammen', t:'2*l', s:'l + l = 2l', m:[{t:'l', m:'Es gibt <b>zwei</b> lange Seiten.'}]},
+            {l:'Länge der beiden kurzen Seiten zusammen', t:'2*b', s:'b + b = 2b', m:[{t:'b', m:'Es gibt <b>zwei</b> kurze Seiten.'}]}],
+     t2a:'Zeichne das Rechteck und beschrifte alle vier Seiten.',
+     t2b:'Zwei Seiten sind <i>l</i> lang: <i>l</i> + <i>l</i> = 2<i>l</i>. Genauso bei den kurzen Seiten.',
+     t3:'Der Umfang ist der ganze Rand – einmal ringsherum.',
+     answer:'2l+2b', show:'2l + 2b', explain:'Beide Teilterme addiert. Ebenfalls richtig: 2 · (<i>l</i> + <i>b</i>).',
+     probe:{l:5,b:3}, probeQ:'Wie groß ist der Umfang bei 5 cm Länge und 3 cm Breite?',
+     mistakes:[{t:'l*b', m:'Das ist der <b>Flächeninhalt</b>. Gesucht ist der Umfang.'},{t:'l+b', m:'Das ist erst der halbe Rand.'}]},
+    {id:'A6', title:'Aquarium',
+     text:'Ein Aquarium enthält Wasser – wie viele Liter, wissen wir nicht. Jeden Tag verdunstet gleich viel Wasser. Es wird nichts nachgefüllt.',
+     ask:'die Wassermenge nach einer Woche (in Litern)',
+     vars:{w:'Wassermenge am Anfang in Litern', v:'verdunstete Liter pro Tag'},
+     distract:[{t:'Anzahl der Tage einer Woche', w:'Eine Woche hat immer 7 Tage.'},{t:'Wassermenge nach einer Woche', w:RES}],
+     parts:[{l:'verdunstetes Wasser in einer Woche (in Litern)', t:'7*v', s:'7 · v = 7v', m:[{t:'v', m:'Das ist erst ein Tag. Eine Woche hat 7 Tage.'}]}],
+     t2a:'Wie viel Wasser verdunstet in 7 Tagen, wenn es 2 Liter pro Tag sind?',
+     t2b:'In 7 Tagen verdunsten 7 · <i>v</i> Liter.',
+     t3:'Am Anfang sind <i>w</i> Liter da. Das verdunstete Wasser fehlt danach.',
+     answer:'w-7v', show:'w − 7v', explain:'Anfangsmenge minus verdunstetes Wasser:',
+     probe:{w:120,v:2}, probeQ:'Wie viel Wasser ist nach einer Woche da bei 120 Litern am Anfang und 2 Litern pro Tag?',
+     mistakes:[{t:'w-v', m:'So rechnest du nur einen Tag.'},{t:'7w-7v', m:'Die Anfangsmenge ist nur einmal da.'},{t:'7*(w-v)', m:'Die Anfangsmenge ist nur einmal da.'}]}
+  ]
+},
+{
+  id:'B', color:'--B', soft:'--B-soft', tab:'Teil B · 3 Variablen', title:'Teil B: Drei Variablen',
+  lead:'Jetzt kommen drei Größen vor, deren Wert nicht angegeben ist. Das Vorgehen bleibt gleich: Variablen festlegen, Teilterme aufstellen, Teilterme verbinden.',
+  example:`Kino: Karte 9 €, Popcorn 4 €, Getränk 3 €. Gesucht: die Einnahmen in €.
+    <ol><li><b>Variablen:</b> <i>k</i> = Anzahl Karten, <i>p</i> = Anzahl Popcorn, <i>g</i> = Anzahl Getränke</li>
+    <li><b>Teilterme:</b> <span class="term">9k</span> · <span class="term">4p</span> · <span class="term">3g</span></li>
+    <li><b>Gesamtterm:</b> <span class="term">9k + 4p + 3g</span></li></ol>`,
+  tasks:[
+    {id:'B1', title:'Schulfest',
+     text:'Beim Schulfest kostet ein Stück Kuchen 1,50 €, eine Waffel 2 € und ein Getränk 1 €. Am Ende zählt die Klasse, wie viel von allem verkauft wurde.',
+     ask:'die Einnahmen in €',
+     vars:{k:'Anzahl der verkauften Kuchenstücke', w:'Anzahl der verkauften Waffeln', g:'Anzahl der verkauften Getränke'},
+     distract:[{t:'Preis einer Waffel', w:'Eine Waffel kostet immer 2 €.'},{t:'Einnahmen', w:RES}],
+     parts:[{l:'Einnahmen durch Kuchen (in €)', t:'1.5*k', s:'1,5 · k = 1,5k'},{l:'Einnahmen durch Waffeln (in €)', t:'2*w', s:'2 · w = 2w'},{l:'Einnahmen durch Getränke (in €)', t:'g', s:'1 · g = g'}],
+     t2a:'Jede Sorte bringt für sich Geld ein: Preis · Anzahl.',
+     t2b:'Kuchen: 1,5 · <i>k</i>. Bei den Getränken: 1 · <i>g</i> – und 1 · <i>g</i> schreibt man kurz als <i>g</i>.',
+     t3:'Alle Einnahmen kommen zusammen.',
+     answer:'1.5k+2w+g', show:'1,5k + 2w + g', explain:'Die drei Teilterme werden addiert:',
+     probe:{k:10,w:6,g:8}, probeQ:'Wie viel wird mit 10 Kuchenstücken, 6 Waffeln und 8 Getränken eingenommen?',
+     mistakes:[]},
+    {id:'B2', title:'Drahtmodell', svg:()=>SVG.cuboid(),
+     text:'Für ein Kantenmodell eines Quaders wird Draht gebraucht. Länge, Breite und Höhe des Quaders (in cm) stehen noch nicht fest.',
+     ask:'die benötigte Drahtlänge (in cm)',
+     vars:{a:'Länge des Quaders in cm', b:'Breite des Quaders in cm', c:'Höhe des Quaders in cm'},
+     distract:[{t:'Anzahl der Kanten', w:'Ein Quader hat immer 12 Kanten.'},{t:'benötigte Drahtlänge', w:RES}],
+     parts:[{l:'Draht für alle Kanten in Längsrichtung', t:'4*a', s:'4 · a = 4a'},{l:'Draht für alle Kanten in Breitenrichtung', t:'4*b', s:'4 · b = 4b'},{l:'Draht für alle senkrechten Kanten', t:'4*c', s:'4 · c = 4c'}],
+     t2a:'Nimm eine Schachtel in die Hand: Wie viele Kanten verlaufen in Längsrichtung?',
+     t2b:'Es gibt je 4 Kanten in jede Richtung, z. B. 4 · <i>a</i>.',
+     t3:'Der Draht wird für alle 12 Kanten gebraucht.',
+     answer:'4a+4b+4c', show:'4a + 4b + 4c', explain:'Alle Teilterme addiert. Ebenfalls richtig: 4 · (<i>a</i> + <i>b</i> + <i>c</i>).',
+     probe:{a:5,b:3,c:2}, probeQ:'Wie viel Draht braucht man für einen Quader mit 5 cm, 3 cm und 2 cm?',
+     mistakes:[{t:'a+b+c', m:'Das sind nur drei Kanten.'},{t:'a*b*c', m:'Das ist das <b>Volumen</b>.'}]},
+    {id:'B3', title:'Fußballtabelle',
+     text:'Für einen Sieg gibt es 3 Punkte, für ein Unentschieden 1 Punkt und für eine Niederlage 0 Punkte. Ein Team hat eine ganze Saison gespielt.',
+     ask:'die Punktzahl des Teams',
+     vars:{s:'Anzahl der Siege', u:'Anzahl der Unentschieden', n:'Anzahl der Niederlagen'}, required:['s','u'],
+     distract:[{t:'Punkte für einen Sieg', w:'Ein Sieg bringt immer 3 Punkte.'},{t:'Punktzahl des Teams', w:RES}],
+     parts:[{l:'Punkte durch Siege', t:'3*s', s:'3 · s = 3s'},{l:'Punkte durch Unentschieden', t:'u', s:'1 · u = u'},
+            {l:'Punkte durch Niederlagen', t:'0*n', s:'0 · n = 0', m:[{t:'n', m:'Für eine Niederlage gibt es 0 Punkte, nicht 1 Punkt.'}]}],
+     t2a:'Rechne für jedes Ergebnis einzeln: Punkte pro Spiel · Anzahl.',
+     t2b:'Bei den Niederlagen: 0 · <i>n</i>. Was ergibt das?',
+     t3:'Addiere die Teilterme. Einer davon ist 0 – den kannst du weglassen.',
+     answer:'3s+u', show:'3s + u', explain:'3<i>s</i> + <i>u</i> + 0 – und die 0 fällt weg:',
+     probe:{s:5,u:2,n:3}, probeQ:'Wie viele Punkte hat ein Team mit 5 Siegen, 2 Unentschieden und 3 Niederlagen?',
+     mistakes:[{t:'3s+u+n', m:'Für Niederlagen gibt es 0 Punkte. Was ergibt 0 · <i>n</i>?'},{t:'s+u+n', m:'So zählst du die Spiele, nicht die Punkte.'}]},
+    {id:'B4', title:'Klassenkasse',
+     text:'In der Klassenkasse ist schon etwas Geld. Jede Person der Klasse zahlt 5 € ein. Danach werden Eintrittskarten bezahlt – was sie zusammen kosten, steht noch nicht fest.',
+     ask:'den Betrag, der danach in der Kasse ist (in €)',
+     vars:{k:'Geld in der Kasse am Anfang in €', s:'Anzahl der Personen in der Klasse', a:'Preis aller Eintrittskarten in €'},
+     distract:[{t:'Einzahlung pro Person', w:'Jede Person zahlt immer 5 € ein.'},{t:'Betrag in der Kasse am Ende', w:RES}],
+     parts:[{l:'eingezahltes Geld (in €)', t:'5*s', s:'5 · s = 5s'}],
+     t2a:'Wie viel Geld kommt zusammen, wenn 25 Personen je 5 € einzahlen?',
+     t2b:'<i>s</i> Personen zahlen je 5 € ein: 5 · <i>s</i>.',
+     t3:'Gehe der Reihe nach: Was ist am Anfang da? Was kommt dazu? Was geht weg?',
+     answer:'k+5s-a', show:'k + 5s − a', explain:'Anfangsbetrag plus Einzahlungen minus Ausgaben:',
+     probe:{k:40,s:25,a:100}, probeQ:'Wie viel ist in der Kasse bei 40 € am Anfang, 25 Personen und 100 € für die Karten?',
+     mistakes:[{t:'k+5s+a', m:'Die Eintrittskarten werden bezahlt – das Geld geht aus der Kasse heraus.'},{t:'5k+5s-a', m:'Nur die Personen zahlen je 5 € ein.'}]},
+    {id:'B5', title:'Im Zug',
+     text:'Ein Zug besteht aus Wagen der 1. Klasse mit je 48 Sitzplätzen und Wagen der 2. Klasse mit je 72 Sitzplätzen. Ein Teil der Plätze ist schon besetzt.',
+     ask:'die Anzahl der freien Sitzplätze',
+     vars:{x:'Anzahl der Wagen der 1. Klasse', y:'Anzahl der Wagen der 2. Klasse', z:'Anzahl der sitzenden Fahrgäste'},
+     distract:[{t:'Sitzplätze in einem Wagen der 2. Klasse', w:'Ein Wagen der 2. Klasse hat immer 72 Plätze.'},{t:'Anzahl der freien Sitzplätze', w:RES}],
+     parts:[{l:'Sitzplätze in der 1. Klasse', t:'48*x', s:'48 · x = 48x'},{l:'Sitzplätze in der 2. Klasse', t:'72*y', s:'72 · y = 72y'}],
+     t2a:'Wie viele Sitzplätze haben 3 Wagen der 1. Klasse?',
+     t2b:'<i>x</i> Wagen mit je 48 Plätzen: 48 · <i>x</i>.',
+     t3:'Erst alle Sitzplätze zusammen – dann die besetzten Plätze berücksichtigen.',
+     answer:'48x+72y-z', show:'48x + 72y − z', explain:'Alle Sitzplätze minus die besetzten Plätze:',
+     probe:{x:2,y:5,z:300}, probeQ:'Wie viele Plätze sind frei bei 2 Wagen 1. Klasse, 5 Wagen 2. Klasse und 300 sitzenden Fahrgästen?',
+     mistakes:[{t:'48x+72y+z', m:'Besetzte Plätze sind nicht mehr frei.'},{t:'48x+72y', m:'Das sind alle Sitzplätze. Wie viele davon sind frei?'}]},
+    {id:'B6', title:'In der Bäckerei',
+     text:'Frau Yılmaz bezahlt mit einem 20-€-Schein. Sie kauft Brötchen zu je 0,45 €, Brezeln zu je 0,80 € und Croissants zu je 1,20 €.',
+     ask:'das Wechselgeld in €',
+     vars:{b:'Anzahl der Brötchen', r:'Anzahl der Brezeln', c:'Anzahl der Croissants'},
+     distract:[{t:'Wert des Geldscheins', w:'Der Schein ist 20 € wert – das steht fest.'},{t:'Wechselgeld', w:RES}],
+     parts:[{l:'Preis der Brötchen (in €)', t:'0.45*b', s:'0,45 · b = 0,45b'},{l:'Preis der Brezeln (in €)', t:'0.8*r', s:'0,8 · r = 0,8r'},{l:'Preis der Croissants (in €)', t:'1.2*c', s:'1,2 · c = 1,2c'}],
+     t2a:'Preis pro Stück · Anzahl – für jede Sorte einzeln.',
+     t2b:'Brötchen: 0,45 · <i>b</i>. Du kannst 0,8 oder 0,80 schreiben.',
+     t3:'Vom 20-€-Schein werden <b>alle</b> drei Beträge abgezogen. Ziehe jeden einzeln ab oder setze eine Klammer.',
+     answer:'20-0.45b-0.8r-1.2c', show:'20 − 0,45b − 0,8r − 1,2c', explain:'Von 20 € wird der ganze Einkauf abgezogen. Ebenfalls richtig: 20 − (0,45<i>b</i> + 0,8<i>r</i> + 1,2<i>c</i>).',
+     probe:{b:6,r:2,c:3}, probeQ:'Wie viel Wechselgeld gibt es bei 6 Brötchen, 2 Brezeln und 3 Croissants?',
+     mistakes:[{t:'20-0.45b+0.8r+1.2c', m:'Du ziehst nur die Brötchen ab und zählst Brezeln und Croissants dazu. Der <b>ganze</b> Einkauf muss abgezogen werden – setze eine Klammer!'},
+               {t:'0.45b+0.8r+1.2c', m:'Das ist der Preis des Einkaufs. Gesucht ist das Wechselgeld.'},
+               {t:'0.45b+0.8r+1.2c-20', m:'Die Reihenfolge stimmt nicht: Vom 20-€-Schein wird der Einkauf abgezogen.'}]}
+  ]
+},
+{
+  id:'C', color:'--C', soft:'--C-soft', tab:'Teil C · Produkte', title:'Teil C: Terme mit Produkten',
+  lead:'Jetzt werden auch Variablen miteinander multipliziert – zum Beispiel bei Flächen oder wenn „je“ vor einer Anzahl steht, die selbst eine Variable ist.',
+  example:`Ein Regal hat mehrere Bretter mit je gleich vielen Büchern. Dazu liegen noch 5 Bücher auf dem Tisch. Gesucht: die Anzahl aller Bücher.
+    <ol><li><b>Variablen:</b> <i>r</i> = Anzahl der Bretter, <i>b</i> = Bücher pro Brett</li>
+    <li><b>Teilterm:</b> Bücher im Regal: <span class="term">r · b = rb</span></li>
+    <li><b>Gesamtterm:</b> <span class="term">rb + 5</span></li></ol>`,
+  tasks:[
+    {id:'C1', title:'Rasensamen', svg:()=>SVG.rect('#e2f2dc','#a21caf'),
+     text:'Ein rechteckiger Garten soll mit Rasen eingesät werden. Pro Quadratmeter braucht man 30 g Rasensamen. Länge und Breite des Gartens (in m) stehen noch nicht fest.',
+     ask:'die benötigte Menge Rasensamen (in g)',
+     vars:{l:'Länge des Gartens in m', b:'Breite des Gartens in m'},
+     distract:[{t:'Samen pro Quadratmeter', w:'Pro m² braucht man immer 30 g.'},{t:'benötigte Samenmenge', w:RES}],
+     parts:[{l:'Fläche des Gartens (in m²)', t:'l*b', s:'l · b = lb', m:[{t:'2l+2b', m:'Das ist der <b>Umfang</b>, nicht die Fläche.'},{t:'l+b', m:'Beim Flächeninhalt wird nicht addiert.'}]}],
+     t2a:'Wie berechnest du den Flächeninhalt eines Rechtecks?',
+     t2b:'Flächeninhalt = Länge · Breite. Den Malpunkt darfst du weglassen.',
+     t3:'Für jeden Quadratmeter braucht man 30 g. Wie oft brauchst du also 30 g?',
+     answer:'30*l*b', show:'30lb', explain:'30 g pro m², also 30 · Fläche:',
+     probe:{l:12,b:8}, probeQ:'Wie viel Samen braucht ein Garten mit 12 m Länge und 8 m Breite?',
+     mistakes:[{t:'30+l*b', m:'„Pro“ Quadratmeter heißt: für jeden m² 30 g – also multiplizieren.'},{t:'30*(2l+2b)', m:'Du hast mit dem Umfang gerechnet statt mit der Fläche.'}]},
+    {id:'C2', title:'Im Theater',
+     text:'Ein Theater hat mehrere Reihen, und jede Reihe hat gleich viele Plätze. Für eine Vorstellung sind schon einige Karten verkauft.',
+     ask:'die Anzahl der noch freien Plätze',
+     vars:{r:'Anzahl der Reihen', p:'Anzahl der Plätze pro Reihe', k:'Anzahl der verkauften Karten'},
+     distract:[{t:'Preis einer Karte', w:'Der Preis spielt für die Anzahl der freien Plätze keine Rolle.'},{t:'Anzahl der freien Plätze', w:RES}],
+     parts:[{l:'Anzahl aller Plätze', t:'r*p', s:'r · p = rp', m:[{t:'r+p', m:'Bei „mehrere Reihen mit je gleich vielen Plätzen“ wird nicht addiert. Rechne mit Zahlen: 20 Reihen mit je 30 Plätzen.'}]}],
+     t2a:'Wie viele Plätze hat ein Theater mit 20 Reihen zu je 30 Plätzen? Wie rechnest du das?',
+     t2b:'Alle Plätze: <i>r</i> · <i>p</i>.',
+     t3:'Von allen Plätzen sind schon <i>k</i> verkauft.',
+     answer:'r*p-k', show:'rp − k', explain:'Alle Plätze minus die verkauften Plätze:',
+     probe:{r:20,p:30,k:450}, probeQ:'Wie viele Plätze sind frei bei 20 Reihen mit je 30 Plätzen und 450 verkauften Karten?',
+     mistakes:[{t:'r*p+k', m:'Verkaufte Plätze sind nicht mehr frei.'}]},
+    {id:'C3', title:'Klassenausflug ins Kino',
+     text:'Eine Klasse geht ins Kino. Den Kartenpreis kennen wir nicht. Außerdem kauft sich jede Person ein Getränk für 2 €.',
+     ask:'die Gesamtkosten der Klasse (in €)',
+     vars:{s:'Anzahl der Personen', p:'Preis einer Kinokarte in €'},
+     distract:[{t:'Preis eines Getränks', w:'Ein Getränk kostet immer 2 €.'},{t:'Gesamtkosten', w:RES}],
+     parts:[{l:'Kosten für alle Kinokarten (in €)', t:'s*p', s:'s · p = sp'},{l:'Kosten für alle Getränke (in €)', t:'2*s', s:'2 · s = 2s', m:[{t:'2', m:'Das Getränk kauft sich <b>jede</b> Person – nicht nur eine.'}]}],
+     t2a:'Was kosten die Karten für 25 Personen, wenn eine Karte 7 € kostet?',
+     t2b:'Karten: <i>s</i> · <i>p</i>. Getränke: Jede der <i>s</i> Personen zahlt 2 €.',
+     t3:'Die Klasse bezahlt Karten und Getränke.',
+     answer:'s*p+2*s', show:'sp + 2s', explain:'Beide Teilterme addiert. Ebenfalls richtig: <i>s</i> · (<i>p</i> + 2).',
+     probe:{s:25,p:7}, probeQ:'Was kostet der Ausflug für 25 Personen bei 7 € pro Karte?',
+     mistakes:[{t:'s*p+2', m:'Das Getränk kauft sich <b>jede</b> Person.'}]},
+    {id:'C4', title:'Neue Fliesen',
+     text:'Ein rechteckiger Raum soll komplett gefliest werden. Länge und Breite des Raums (in m) und der Preis für einen Quadratmeter Fliesen stehen noch nicht fest.',
+     ask:'die Kosten für die Fliesen (in €)',
+     vars:{l:'Länge des Raums in m', b:'Breite des Raums in m', p:'Preis pro m² Fliesen in €'},
+     distract:[{t:'Anzahl der Wände', w:'Gefliest wird der Boden – die Wände spielen keine Rolle.'},{t:'Kosten für die Fliesen', w:RES}],
+     parts:[{l:'Fläche des Raums (in m²)', t:'l*b', s:'l · b = lb', m:[{t:'2l+2b', m:'Das ist der Umfang. Gefliest wird die ganze Fläche.'}]}],
+     t2a:'Wie berechnest du den Flächeninhalt eines Rechtecks?',
+     t2b:'Fläche: <i>l</i> · <i>b</i> (in m²).',
+     t3:'Jeder einzelne Quadratmeter kostet <i>p</i> €.',
+     answer:'l*b*p', show:'lbp', explain:'Fläche mal Preis pro Quadratmeter:',
+     probe:{l:5,b:4,p:30}, probeQ:'Was kosten die Fliesen für einen 5 m × 4 m großen Raum bei 30 € pro m²?',
+     mistakes:[{t:'l*b+p', m:'Der Preis gilt <b>pro</b> Quadratmeter – also multiplizieren.'}]},
+    {id:'C5', title:'Grundstück mit Teich', svg:()=>SVG.pond,
+     text:'Auf einem rechteckigen Grundstück liegt ein quadratischer Teich, der Rest ist Rasen. Die Maße (in m) kennen wir nicht.',
+     ask:'die Rasenfläche (in m²)',
+     vars:{l:'Länge des Grundstücks in m', b:'Breite des Grundstücks in m', a:'Seitenlänge des Teichs in m'},
+     distract:[{t:'Anzahl der Teichseiten', w:'Ein Quadrat hat immer 4 Seiten.'},{t:'Rasenfläche', w:RES}],
+     parts:[{l:'Fläche des Grundstücks (in m²)', t:'l*b', s:'l · b = lb'},
+            {l:'Fläche des Teichs (in m²)', t:'a^2', s:'a · a = a²', m:[{t:'2*a', m:'Achtung: <i>a</i> · <i>a</i> ist nicht 2<i>a</i>.'},{t:'4*a', m:'4<i>a</i> ist der Umfang des Teichs.'}]}],
+     t2a:'Beide Flächen sind Rechtecke bzw. Quadrate: Länge · Breite.',
+     t2b:'Der Teich ist ein Quadrat: <i>a</i> · <i>a</i> = <i>a</i>². (Taste ² oder a^2.)',
+     t3:'Rasenfläche = ganze Fläche − Teichfläche.',
+     answer:'l*b-a^2', show:'lb − a²', explain:'Grundstücksfläche minus Teichfläche:',
+     probe:{l:20,b:15,a:4}, probeQ:'Wie groß ist die Rasenfläche bei 20 m × 15 m und 4 m Teichseite?',
+     mistakes:[{t:'l*b+a^2', m:'Der Teich ist kein Rasen – seine Fläche wird abgezogen.'},{t:'l*b-2*a', m:'<i>a</i>² bedeutet <i>a</i> · <i>a</i>, nicht 2 · <i>a</i>.'}]},
+    {id:'C6', title:'Geschenkpapier', svg:()=>SVG.cuboid('#a21caf','#f7e6f8'),
+     text:'Ein Geschenkkarton hat die Form eines Quaders. Er soll ohne Überlappung eingepackt werden. Länge, Breite und Höhe (in cm) kennen wir nicht.',
+     ask:'die benötigte Fläche Geschenkpapier (in cm²)',
+     vars:{a:'Länge des Kartons in cm', b:'Breite des Kartons in cm', c:'Höhe des Kartons in cm'},
+     distract:[{t:'Anzahl der Flächen', w:'Ein Quader hat immer 6 Flächen.'},{t:'benötigte Papierfläche', w:RES}],
+     parts:[{l:'Boden und Deckel zusammen', t:'2*a*b', s:'2 · a · b = 2ab', m:[{t:'a*b', m:'Das ist nur eine Fläche – Boden <b>und</b> Deckel.'}]},
+            {l:'Vorder- und Rückseite zusammen', t:'2*a*c', s:'2 · a · c = 2ac', m:[{t:'a*c', m:'Das ist nur eine Fläche – Vorder- <b>und</b> Rückseite.'}]},
+            {l:'linke und rechte Seite zusammen', t:'2*b*c', s:'2 · b · c = 2bc', m:[{t:'b*c', m:'Das ist nur eine Fläche – links <b>und</b> rechts.'}]}],
+     t2a:'Schau dir die Skizze an: Welche Kanten begrenzen den Boden? Welche die Vorderseite?',
+     t2b:'Der Boden ist <i>a</i> lang und <i>b</i> breit: <i>a</i> · <i>b</i>. Den Deckel gibt es noch einmal.',
+     t3:'Alle sechs Flächen zusammen ergeben das Papier.',
+     answer:'2*a*b+2*a*c+2*b*c', show:'2ab + 2ac + 2bc', explain:'Die drei Teilterme addiert:',
+     probe:{a:10,b:6,c:4}, probeQ:'Wie viel Papier braucht ein Karton mit 10 cm, 6 cm und 4 cm?',
+     mistakes:[{t:'a*b*c', m:'Das ist das <b>Volumen</b>.'},{t:'a*b+a*c+b*c', m:'Das sind erst drei der sechs Flächen.'}]},
+    {id:'C7', title:'Bilderrahmen', bonus:true, svg:()=>SVG.frame,
+     text:'Ein rechteckiges Foto bekommt rundherum einen Holzrahmen, der überall gleich breit ist. Alle Maße (in cm) kennen wir nicht.',
+     ask:'den Flächeninhalt des Holzrahmens (in cm²)',
+     vars:{a:'Breite des Fotos in cm', b:'Höhe des Fotos in cm', r:'Breite des Rahmens in cm'},
+     distract:[{t:'Anzahl der Rahmenecken', w:'Ein Rahmen hat immer 4 Ecken.'},{t:'Fläche des Rahmens', w:RES}],
+     parts:[{l:'Breite des Bildes mit Rahmen', t:'a+2*r', s:'a + 2r', m:[{t:'a+r', m:'Der Rahmen ist links <b>und</b> rechts.'}]},
+            {l:'Höhe des Bildes mit Rahmen', t:'b+2*r', s:'b + 2r', m:[{t:'b+r', m:'Der Rahmen ist oben <b>und</b> unten.'}]},
+            {l:'Fläche des Fotos', t:'a*b', s:'a · b = ab'}],
+     t2a:'Zeichne das Foto mit Rahmen. Um wie viel wird das Bild durch den Rahmen breiter?',
+     t2b:'Links kommt <i>r</i> dazu und rechts noch einmal <i>r</i>: <i>a</i> + 2<i>r</i>.',
+     t3:'Rahmenfläche = Fläche von (Foto mit Rahmen) − Fläche des Fotos. Die Fläche mit Rahmen ist Breite mit Rahmen · Höhe mit Rahmen – Klammern nicht vergessen!',
+     answer:'(a+2*r)*(b+2*r)-a*b', show:'(a + 2r) · (b + 2r) − ab', explain:'Großes Rechteck minus Foto. Ausmultipliert ebenfalls richtig: 2<i>ar</i> + 2<i>br</i> + 4<i>r</i>².',
+     probe:{a:15,b:10,r:2}, probeQ:'Wie groß ist die Rahmenfläche bei einem 15 cm × 10 cm Foto und 2 cm Rahmen?',
+     mistakes:[{t:'(a+2*r)*(b+2*r)', m:'Das ist Foto <b>und</b> Rahmen zusammen. Das Foto gehört nicht zum Rahmen.'},
+               {t:'a+2*r*b+2*r-a*b', m:'Hier fehlen Klammern: (Breite mit Rahmen) · (Höhe mit Rahmen).'},
+               {t:'2*a*r+2*b*r', m:'Fast! Die vier Ecken des Rahmens fehlen noch.'}]}
+  ]
+}];
+
+/* ================================================================== */
+/* Term-Parser                                                         */
+/* ================================================================== */
+class PErr extends Error{}
+function normalize(src){
+  return src.toLowerCase().replace(/\s+/g,'')
+    .replace(/[·×⋅∙•]/g,'*').replace(/[−–—]/g,'-').replace(/:/g,'/')
+    .replace(/²/g,'^2').replace(/³/g,'^3').replace(/[\[{]/g,'(').replace(/[\]}]/g,')');
+}
+function parse(src){
+  const s=normalize(src), toks=[]; let i=0;
+  while(i<s.length){
+    const c=s[i];
+    if(/[0-9]/.test(c)){ const m=s.slice(i).match(/^\d+(?:[.,]\d+)?/); toks.push({t:'num',v:parseFloat(m[0].replace(',','.'))}); i+=m[0].length; continue; }
+    if(/[a-z]/.test(c)){ toks.push({t:'var',v:c}); i++; continue; }
+    if('+-*/^()'.includes(c)){ toks.push({t:c}); i++; continue; }
+    if(c===','||c==='.') throw new PErr('Ein Komma steht an einer Stelle, an der keine Zahl steht.');
+    throw new PErr(`Das Zeichen „${c}“ kann ich nicht verarbeiten.`);
+  }
+  if(!toks.length) throw new PErr('Bitte gib zuerst einen Term ein.');
+  const out=[];
+  for(const tk of toks){
+    const p=out[out.length-1];
+    if(p&&(p.t==='num'||p.t==='var'||p.t===')')&&(tk.t==='var'||tk.t==='('||(tk.t==='num'&&p.t!=='num'))) out.push({t:'*'});
+    out.push(tk);
+  }
+  let pos=0; const peek=()=>out[pos], next=()=>out[pos++];
+  const expr=()=>{ let n=term(); while(peek()&&(peek().t==='+'||peek().t==='-')){ const op=next().t; n={op,l:n,r:term()}; } return n; };
+  const term=()=>{ let n=unary(); while(peek()&&(peek().t==='*'||peek().t==='/')){ const op=next().t; n={op,l:n,r:unary()}; } return n; };
+  const unary=()=>{ if(peek()&&(peek().t==='-'||peek().t==='+')){ const op=next().t; const a=unary(); return op==='-'?{op:'neg',a}:a; } return power(); };
+  const power=()=>{ const b=atom(); if(peek()&&peek().t==='^'){ next(); return {op:'^',l:b,r:unary()}; } return b; };
+  const atom=()=>{
+    const tk=next();
+    if(!tk) throw new PErr('Der Term hört mitten drin auf – fehlt am Ende noch etwas?');
+    if(tk.t==='num') return {num:tk.v};
+    if(tk.t==='var') return {v:tk.v};
+    if(tk.t==='('){ const e=expr(); const c=next(); if(!c||c.t!==')') throw new PErr('Eine Klammer wurde geöffnet, aber nicht wieder geschlossen.'); return e; }
+    if(tk.t===')') throw new PErr('Da ist eine schließende Klammer zu viel – oder eine Klammer ist leer.');
+    throw new PErr(`Vor oder nach „${tk.t==='*'?'·':tk.t}“ fehlt eine Zahl oder Variable.`);
+  };
+  const tree=expr();
+  if(pos<out.length) throw new PErr(out[pos].t===')'?'Da ist eine schließende Klammer zu viel.':'Der Term ist so nicht lesbar – prüfe die Rechenzeichen.');
+  return tree;
+}
+function ev(n,env){
+  if('num' in n) return n.num;
+  if('v' in n) return env[n.v];
+  switch(n.op){
+    case '+': return ev(n.l,env)+ev(n.r,env);
+    case '-': return ev(n.l,env)-ev(n.r,env);
+    case '*': return ev(n.l,env)*ev(n.r,env);
+    case '/': return ev(n.l,env)/ev(n.r,env);
+    case '^': return Math.pow(ev(n.l,env),ev(n.r,env));
+    case 'neg': return -ev(n.a,env);
+  }
+}
+function varsOf(n,set=new Set()){
+  if('v' in n) set.add(n.v); else if(n.op==='neg') varsOf(n.a,set); else if(n.op){ varsOf(n.l,set); varsOf(n.r,set); }
+  return set;
+}
+const close=(x,y)=>isFinite(x)&&isFinite(y)&&Math.abs(x-y)<=1e-7*Math.max(1,Math.abs(y));
+function randEnvs(names,k=8){ const r=[]; for(let i=0;i<k;i++){ const e={}; names.forEach(v=>e[v]=Math.round((1.3+Math.random()*8.4)*1000)/1000); r.push(e); } return r; }
+function perms(a){ if(a.length<=1) return [a]; const r=[]; a.forEach((x,i)=>perms(a.slice(0,i).concat(a.slice(i+1))).forEach(p=>r.push([x,...p]))); return r; }
+const fmt=x=>(Math.round(x*100)/100).toLocaleString('de-DE');
+const vi=v=>`<i>${v}</i>`;
+const listAnd=arr=>arr.join(', ').replace(/, ([^,]*)$/,' und $1');
+/* Standard-Variablen -> Buchstaben der Schüler */
+const mapShow=(s,map)=>s.replace(/[a-z]/g,c=>(map&&map[c])||c);
+const mapHtml=(h,map)=>h.replace(/<i>([a-z]+)<\/i>/g,(_,w)=>'<i>'+mapShow(w,map)+'</i>');
+function hash(str){ let h=2166136261; for(const c of str){ h^=c.charCodeAt(0); h=Math.imul(h,16777619); } return h>>>0; }
+function seededShuffle(arr,seed){ const a=arr.slice(); let s=seed; for(let i=a.length-1;i>0;i--){ s=(Math.imul(s,1103515245)+12345)>>>0; const j=s%(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+/* ================================================================== */
+/* Prüfen eines Terms (Teilterm oder Gesamtterm)                       */
+/* ================================================================== */
+function checkTerm(task, expStr, raw, map, o){
+  let src=(raw||'').trim(), note='';
+  if(!src) return {cls:'warn', html:'Bitte gib zuerst einen Term ein.'};
+  if(src.includes('=')){
+    const parts=src.split('=').map(x=>x.trim()).filter(Boolean);
+    if(!parts.length) return {cls:'warn', html:'Bitte gib zuerst einen Term ein.'};
+    if(parts.length>1) note='Gefragt ist nur der Term. Den Teil vor dem Gleichheitszeichen habe ich weggelassen.';
+    src=parts[parts.length-1];
+  }
+  let tree;
+  try{ tree=parse(src); }catch(e){ return {cls:'warn', html:(e instanceof PErr?e.message:'Der Term ist so nicht lesbar.')}; }
+  const names=Object.keys(task.vars), letters=names.map(c=>map[c]);
+  const used=[...varsOf(tree)];
+  const unknown=used.filter(v=>!letters.includes(v));
+  if(unknown.length) return {cls:'warn', html:`${unknown.length>1?'Die Buchstaben':'Den Buchstaben'} ${listAnd(unknown.map(vi))} hast du in Schritt 1 nicht als Variable festgelegt. Deine Variablen: ${listAnd(letters.map(vi))}.`};
+  if(o.counter) o.counter.attempts=(o.counter.attempts||0)+1;
+  const exp=parse(expStr), expVars=[...varsOf(exp)];
+  const envs=randEnvs(names);
+  const S=e=>{ const s={}; names.forEach(c=>s[map[c]]=e[c]); return s; };
+  const same=(tr,ex)=>envs.every(e=>close(ev(tr,S(e)),ev(ex,e)));
+  const nh=note?`<span class="note">${note}</span>`:'';
+  const M=h=>mapHtml(h,map);
+
+  if(same(tree,exp)){
+    let extra='';
+    if(/[a-z]\s*[*·×]?\s*\d/i.test(raw.replace(/\^\d/g,''))) extra='<span class="note">Tipp zur Schreibweise: Die Zahl steht üblicherweise vor der Variablen, also z. B. 3a statt a · 3.</span>';
+    const praise=o.kind==='final'?['Richtig!','Super, das stimmt!','Genau so!','Klasse, richtig!'][Math.floor(Math.random()*4)]+' Dein Term beschreibt die Situation korrekt.':'Richtig!';
+    return {ok:true, cls:'ok', html:`<b>${praise}</b>${extra}${nh}`};
+  }
+  for(const m of (o.mistakes||[])){
+    try{ if(same(tree,parse(m.t))) return {cls:'bad', html:`<b>Noch nicht ganz.</b> ${M(m.m)}${nh}`}; }catch(e){}
+  }
+  if(o.kind==='part'){
+    const expL=expVars.map(c=>map[c]);
+    const extra=used.filter(v=>!expL.includes(v)), miss=expL.filter(v=>!used.includes(v));
+    if(extra.length||miss.length){
+      const should=expVars.map(c=>`${vi(map[c])} (${task.vars[c]})`);
+      return {cls:'bad', html:`<b>Prüfe die Variablen.</b> In diesen Teilterm gehört ${should.length>1?'':'nur '}${listAnd(should)}.${nh}`};
+    }
+  } else {
+    if(names.length>1) for(const p of perms(names)){
+      if(p.every((v,i)=>v===names[i])) continue;
+      const ok=envs.every(e=>{ const s={}; names.forEach((c,i)=>s[map[c]]=e[p[i]]); return close(ev(tree,s),ev(exp,e)); });
+      if(ok) return {cls:'bad', html:`<b>Fast!</b> Der Aufbau stimmt, aber du hast Variablen vertauscht. Schau noch einmal in Schritt 1, wofür ${listAnd(letters.map(vi))} stehen.${nh}`};
+    }
+  }
+  const req=(o.kind==='final'?(task.required||names):expVars);
+  const missing=req.filter(c=>!used.includes(map[c]));
+  let html='<b>Das stimmt noch nicht.</b> ';
+  if(missing.length) html+=`Es fehlt noch ${listAnd(missing.map(c=>vi(map[c])))}. `;
+  const show=o.kind==='final'?names:expVars;
+  if(show.length){
+    const pv=S(task.probe), val=ev(tree,pv);
+    html+=`<span class="note"><b>Mach die Probe:</b> Mit ${show.map(c=>`${vi(map[c])} = ${fmt(task.probe[c])}`).join(', ')} ergibt dein ${o.kind==='final'?'Term':'Teilterm'} <b>${isFinite(val)?fmt(val):'keinen Wert'}</b>. ${o.kind==='final'?task.probeQ:'Passt das zur Situation?'}`;
+    if(o.kind==='final'&&o.counter&&o.counter.attempts>=3) html+=` Richtig wäre <b>${fmt(ev(exp,task.probe))}</b>.`;
+    html+='</span>';
+  }
+  return {cls:'bad', html:html+nh};
+}
+
+/* ================================================================== */
+/* Zustand                                                             */
+/* ================================================================== */
+function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.v===2) return s; }catch(e){} return {v:2,start:Date.now(),name:'',tab:'A',tasks:{}}; }
+let state=load();
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} }
+const ALL=PARTS.flatMap(p=>p.tasks.map(t=>({...t,part:p})));
+function ts(t){
+  if(!state.tasks[t.id]){
+    const n=Object.keys(t.vars).length;
+    state.tasks[t.id]={s1:{rows:Array.from({length:n},()=>({l:'',v:''})),done:false,fb:null,map:null},
+      s2:{inp:t.parts.map(()=>''),marks:t.parts.map(()=>null),done:false,fb:null},
+      s3:{inp:'',done:false,fb:null,attempts:0}, h1:{},h2:{},h3:{}, solved:null};
+  }
+  return state.tasks[t.id];
+}
+const usedTip=st=>[1,2,3].some(i=>st['h'+i].t1||st['h'+i].t2);
+const usedSol=st=>[1,2,3].some(i=>st['h'+i].sol);
+
+/* ================================================================== */
+/* Darstellung                                                         */
+/* ================================================================== */
+const main=document.getElementById('main'), tabs=document.getElementById('tabs');
+function renderTabs(){
+  const items=[...PARTS.map(p=>({id:p.id,label:p.tab,color:`var(${p.color})`,p})),{id:'R',label:'Auswertung',color:'#1d2228'}];
+  tabs.innerHTML='';
+  items.forEach(it=>{
+    const b=document.createElement('button'); b.className='tab'; b.setAttribute('role','tab'); b.style.setProperty('--c',it.color);
+    b.setAttribute('aria-selected',state.tab===it.id);
+    const cnt=it.p?`<span class="cnt">${it.p.tasks.filter(t=>ts(t).solved).length}/${it.p.tasks.length}</span>`:'';
+    b.innerHTML=`<span class="dot"></span>${it.label}${cnt}`;
+    b.onclick=()=>{ state.tab=it.id; save(); renderTabs(); renderMain(); window.scrollTo({top:tabs.offsetTop-10,behavior:'smooth'}); };
+    tabs.appendChild(b);
+  });
+}
+function badgeFor(t){
+  const st=ts(t);
+  if(st.solved==='self') return '<span class="badge self">✓ selbst gelöst</span>';
+  if(st.solved==='tip') return '<span class="badge tip">✓ mit Tipp gelöst</span>';
+  if(st.solved==='sol') return '<span class="badge sol">✓ mit Lösungshilfe</span>';
+  return '';
+}
+function renderMain(){
+  if(state.tab==='R'){ renderResult(); return; }
+  const p=PARTS.find(x=>x.id===state.tab);
+  document.documentElement.style.setProperty('--accent',`var(${p.color})`);
+  document.documentElement.style.setProperty('--accent-soft',`var(${p.soft})`);
+  main.innerHTML=`
+    <section class="intro">
+      <h2>${p.title}</h2>
+      <p style="margin:0">${p.lead}</p>
+      <div class="steps">
+        <div class="step"><b>① Variablen festlegen</b>Welche Größen sind nicht als Zahl angegeben? Wähle für jede einen Buchstaben.</div>
+        <div class="step"><b>② Teilterme aufstellen</b>Für jeden Teil der Situation ein eigener Term mit der passenden Variablen.</div>
+        <div class="step"><b>③ Gesamtterm angeben</b>Verbinde die Teilterme zum fertigen Term.</div>
+      </div>
+      <div class="example"><b>Beispiel:</b> ${p.example}</div>
+      <div class="merke"><b>Eingabe:</b> Malpunkt darf fehlen (3a, ab) · Malpunkt: <span class="mono">*</span> oder <span class="mono">·</span> · Kommazahlen mit Komma · Hochzahl mit <span class="mono">²</span> oder <span class="mono">^2</span></div>
+    </section>`;
+  p.tasks.forEach(t=>main.appendChild(taskCard(t)));
+  tick();
+}
+
+function helpHtml(step){
+  const b=(k,l)=>`<button class="hbtn" type="button" data-step="${step}" data-h="${k}">${l}</button>`;
+  return `<div class="help">${b('t1','💡 Tipp 1')}${step<3?b('t2','💡 Tipp 2'):''}${b('sol','✔ Lösung')}</div>`;
+}
+function boxes(step,html){ return Object.entries(html).map(([k,h])=>`<div class="box ${k==='sol'?'solbox':'tipbox'} hidden" data-box="${step}-${k}"><b class="lab">${k==='t1'?'Tipp 1':k==='t2'?'Tipp 2':'Lösung'}</b>${h}</div>`).join(''); }
+const fbHtml=f=>f?`<div class="fb ${f.cls}-c">${f.html}</div>`:'<div class="fb"></div>';
+
+function taskCard(t){
+  const st=ts(t), names=Object.keys(t.vars), map=st.s1.map;
+  const el=document.createElement('article');
+  el.className='task'+(st.solved?' solved':''); el.id='t-'+t.id;
+
+  /* --- Schritt 1 --- */
+  const opts=seededShuffle([...names.map(c=>({k:'v:'+c,t:t.vars[c]})), ...t.distract.map((d,i)=>({k:'d:'+i,t:d.t}))], hash(t.id));
+  const rows=st.s1.rows.map((r,i)=>`
+    <div class="vrow">
+      <input type="text" maxlength="1" data-r="${i}" value="${r.l}" aria-label="Buchstabe Variable ${i+1}" ${st.s1.done?'disabled':''}>
+      <span>steht für</span>
+      <select data-r="${i}" aria-label="Bedeutung Variable ${i+1}" ${st.s1.done?'disabled':''}>
+        <option value="">– bitte wählen –</option>
+        ${opts.map(o=>`<option value="${o.k}" ${r.v===o.k?'selected':''}>${o.t}</option>`).join('')}
+      </select>
+    </div>`).join('');
+  const sol1=`<ul>${names.map(c=>`<li><i>${c}</i> = ${t.vars[c]}</li>`).join('')}</ul><span class="note">Du darfst auch andere Buchstaben wählen.</span>`;
+  const step1=`
+    <section class="stepbox ${st.s1.done?'done':''}">
+      <h4><span class="stepno">1</span>Variablen und ihre Bedeutung angeben ${st.s1.done?'<span class="ok">✓</span>':''}</h4>
+      <p class="sub">Lege für jede Größe, deren Wert nicht als Zahl angegeben ist, eine Variable fest: Buchstabe eintragen und Bedeutung auswählen.</p>
+      ${rows}
+      ${st.s1.done?'':'<div class="actions"><button class="btn check" data-act="c1">Variablen prüfen</button></div>'}
+      ${fbHtml(st.s1.fb)}
+      ${helpHtml(1)}
+      ${boxes(1,{
+        t1:'Eine Variable brauchst du für jede Größe, deren Wert im Text <b>nicht</b> als Zahl angegeben ist. Feste Zahlen (Preise, Punkte, …) sind keine Variablen – und das Ergebnis, das du berechnen sollst, auch nicht.',
+        t2:`Du brauchst genau ${names.length} Variablen. Unterstreiche im Text alle Mengen, bei denen keine Zahl steht. Als Buchstaben eignet sich oft der Anfangsbuchstabe.`,
+        sol:sol1})}
+    </section>`;
+
+  /* --- Schritt 2 --- */
+  let step2;
+  if(!st.s1.done){
+    step2=`<section class="stepbox locked"><h4><span class="stepno">2</span>Teilterme aufstellen</h4><p class="lockmsg">Wird freigeschaltet, sobald Schritt 1 richtig ist.</p></section>`;
+  } else {
+    const chips=`<div class="chips">${names.map(c=>`<span><b>${map[c]}</b>${t.vars[c]}</span>`).join('')}</div>`;
+    const inParts=new Set(t.parts.flatMap(p=>[...varsOf(parse(p.t))]));
+    const alone=names.filter(c=>!inParts.has(c));
+    const prow=t.parts.map((p,i)=>{
+      const mk=st.s2.marks[i];
+      return `<div class="prow">
+        <label for="p-${t.id}-${i}">${p.l}:</label>
+        <input id="p-${t.id}-${i}" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" data-p="${i}" value="${(st.s2.inp[i]||'').replace(/"/g,'&quot;')}" ${st.s2.done?'disabled':''}>
+        <span class="mk">${mk?(mk.ok?'✅':(mk.cls==='warn'?'⚠️':'❌')):''}</span>
+        ${mk&&!mk.ok?`<div class="pfb ${mk.cls}-c">${mk.html}</div>`:''}
+      </div>`; }).join('');
+    step2=`
+    <section class="stepbox ${st.s2.done?'done':''}">
+      <h4><span class="stepno">2</span>Teilterme aufstellen ${st.s2.done?'<span class="ok">✓</span>':''}</h4>
+      ${chips}
+      <p class="sub">Stelle für jeden Teil der Situation einen Teilterm mit deinen Variablen auf.${alone.length?` ${listAnd(alone.map(c=>vi(map[c])))} ${alone.length>1?'stehen':'steht'} im Gesamtterm ohne Rechnung und ${alone.length>1?'brauchen':'braucht'} keinen eigenen Teilterm.`:''}</p>
+      ${prow}
+      ${st.s2.done?'':`<div class="actions"><button class="btn check" data-act="c2">Teilterme prüfen</button>${keysHtml()}</div>`}
+      ${st.s2.done?fbHtml(st.s2.fb):''}
+      ${helpHtml(2)}
+      ${boxes(2,{t1:mapHtml(t.t2a,map), t2:mapHtml(t.t2b,map),
+        sol:`<ul>${t.parts.map(p=>`<li>${p.l}: <span class="term">${mapShow(p.s,map)}</span></li>`).join('')}</ul>`})}
+    </section>`;
+  }
+
+  /* --- Schritt 3 --- */
+  let step3;
+  if(!st.s2.done){
+    step3=`<section class="stepbox locked"><h4><span class="stepno">3</span>Fertigen Term angeben</h4><p class="lockmsg">Wird freigeschaltet, sobald alle Teilterme richtig sind.</p></section>`;
+  } else {
+    const rem=t.parts.map((p,i)=>`${p.l}: <span class="term">${escapeHtml(st.s2.inp[i])}</span>`).join(' · ');
+    step3=`
+    <section class="stepbox ${st.s3.done?'done':''}">
+      <h4><span class="stepno">3</span>Fertigen Term angeben ${st.s3.done?'<span class="ok">✓</span>':''}</h4>
+      <p class="remind"><b>Deine Teilterme:</b> ${rem}</p>
+      <p class="sub">Verbinde die Teilterme zu einem Term für ${t.ask}.</p>
+      <div class="inrow">
+        <input type="text" autocomplete="off" autocapitalize="off" spellcheck="false" data-final="1" aria-label="Gesamtterm ${t.id}" value="${(st.s3.inp||'').replace(/"/g,'&quot;')}" ${st.s3.done?'disabled':''} placeholder="Gesamtterm">
+        ${st.s3.done?'':'<button class="btn check" data-act="c3">Prüfen</button>'}
+      </div>
+      ${st.s3.done?'':`<div class="actions">${keysHtml()}</div>`}
+      ${fbHtml(st.s3.fb)}
+      ${helpHtml(3)}
+      ${boxes(3,{t1:mapHtml(t.t3,map), sol:`${mapHtml(t.explain,map)}<div style="margin-top:6px"><span class="term">${mapShow(t.show,map)}</span></div>`})}
+    </section>`;
+  }
+
+  el.innerHTML=`
+    <header><span class="num">${t.id}</span><h3>${t.title}</h3>${t.bonus?'<span class="badge bonus">★ Knobelaufgabe</span>':''}<span class="stat">${badgeFor(t)}</span></header>
+    <div class="ctx"><p>${t.text}</p>${t.svg?t.svg():''}</div>
+    <p class="ask"><b>Gesucht ist ein Term für</b> ${t.ask}.</p>
+    ${step1}${step2}${step3}`;
+
+  /* --- Ereignisse --- */
+  let lastInput=null;
+  el.querySelectorAll('input[data-r]').forEach(inp=>inp.addEventListener('input',()=>{ inp.value=inp.value.replace(/[^a-zA-Z]/g,'').toLowerCase(); st.s1.rows[+inp.dataset.r].l=inp.value; save(); }));
+  el.querySelectorAll('select[data-r]').forEach(sel=>sel.addEventListener('change',()=>{ st.s1.rows[+sel.dataset.r].v=sel.value; save(); }));
+  el.querySelectorAll('input[data-p]').forEach(inp=>{
+    inp.addEventListener('input',()=>{ st.s2.inp[+inp.dataset.p]=inp.value; save(); });
+    inp.addEventListener('focus',()=>lastInput=inp);
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter') act('c2'); });
+  });
+  const fin=el.querySelector('input[data-final]');
+  if(fin){ fin.addEventListener('input',()=>{ st.s3.inp=fin.value; save(); }); fin.addEventListener('focus',()=>lastInput=fin); fin.addEventListener('keydown',e=>{ if(e.key==='Enter') act('c3'); }); }
+  el.querySelectorAll('.keys button').forEach(b=>{
+    b.addEventListener('mousedown',e=>e.preventDefault());
+    b.onclick=()=>{
+      const inp=lastInput||el.querySelector('input[data-p]:not(:disabled), input[data-final]:not(:disabled)'); if(!inp||inp.disabled) return;
+      const k=b.dataset.k, s=inp.selectionStart??inp.value.length, e=inp.selectionEnd??inp.value.length;
+      inp.value=inp.value.slice(0,s)+k+inp.value.slice(e); inp.focus(); inp.setSelectionRange(s+k.length,s+k.length);
+      inp.dispatchEvent(new Event('input'));
+    };
+  });
+  el.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>act(b.dataset.act));
+  el.querySelectorAll('.hbtn').forEach(b=>b.onclick=()=>{
+    const h=st['h'+b.dataset.step]; if(!h[b.dataset.h]){ h[b.dataset.h]=Date.now(); save(); } tick();
+  });
+
+  function act(a){
+    if(a==='c1'){ st.s1.fb=check1(t,st); }
+    if(a==='c2'){
+      let all=true;
+      t.parts.forEach((p,i)=>{ const r=checkTerm(t,p.t,st.s2.inp[i],map,{kind:'part',mistakes:p.m}); st.s2.marks[i]={ok:!!r.ok,cls:r.cls,html:r.html}; if(!r.ok) all=false; });
+      if(all){ st.s2.done=true; st.s2.fb={cls:'ok',html:'<b>Alle Teilterme sind richtig!</b> Weiter mit Schritt 3.'}; }
+    }
+    if(a==='c3'){
+      const r=checkTerm(t,t.answer,st.s3.inp,map,{kind:'final',mistakes:t.mistakes,counter:st.s3});
+      st.s3.fb={cls:r.cls,html:r.html};
+      if(r.ok){ st.s3.done=true; st.solved=usedSol(st)?'sol':(usedTip(st)?'tip':'self'); }
+    }
+    save();
+    const fresh=taskCard(t); el.replaceWith(fresh);
+    const nextInp=fresh.querySelector('input:not(:disabled), select:not(:disabled)');
+    if(a!=='c3' && nextInp && ((a==='c1'&&st.s1.done)||(a==='c2'&&st.s2.done))) nextInp.focus({preventScroll:true});
+    updateProgress(); renderTabs(); tick();
+  }
+  return el;
+}
+function keysHtml(){ return `<div class="keys">${['·','(',')','²','−'].map(k=>`<button type="button" data-k="${k}" aria-label="${k} einfügen">${k}</button>`).join('')}</div>`; }
+
+function check1(t,st){
+  const names=Object.keys(t.vars), rows=st.s1.rows;
+  const letters=rows.map(r=>(r.l||'').trim().toLowerCase());
+  const W=h=>({cls:'warn',html:h}), B=h=>({cls:'bad',html:h});
+  if(letters.some(l=>!l)) return W('Trage in jeder Zeile einen Buchstaben für die Variable ein.');
+  if(letters.some(l=>!/^[a-z]$/.test(l))) return W('Eine Variable ist ein einzelner Buchstabe von a bis z.');
+  if(new Set(letters).size<letters.length) return W('Jede Variable braucht einen eigenen Buchstaben – zwei Zeilen haben denselben.');
+  if(rows.some(r=>!r.v)) return W('Wähle in jeder Zeile aus, wofür die Variable steht.');
+  const vals=rows.map(r=>r.v);
+  if(new Set(vals).size<vals.length) return B('Zwei Variablen stehen für dieselbe Größe. Jede Größe bekommt genau eine Variable.');
+  const d=vals.find(v=>v.startsWith('d:'));
+  if(d){ const x=t.distract[+d.slice(2)]; return B(`<b>„${x.t}“ ist keine Variable.</b> ${x.w}`); }
+  const map={}; rows.forEach((r,i)=>map[r.v.slice(2)]=letters[i]);
+  st.s1.map=map; st.s1.done=true;
+  return {cls:'ok', html:`<b>Richtig!</b> Deine Variablen: ${names.map(c=>`${vi(map[c])} = ${t.vars[c]}`).join('; ')}.`};
+}
+
+function tick(){
+  if(state.tab==='R') return;
+  const now=Date.now(), p=PARTS.find(x=>x.id===state.tab);
+  p.tasks.forEach(t=>{
+    const el=document.getElementById('t-'+t.id); if(!el) return;
+    const st=ts(t);
+    [1,2,3].forEach(step=>{
+      const h=st['h'+step], done=step===1?st.s1.done:step===2?st.s2.done:st.s3.done;
+      const prev = step<3 ? h.t2 : h.t1;
+      el.querySelectorAll(`.hbtn[data-step="${step}"]`).forEach(b=>{
+        const k=b.dataset.h; let can=true, label=b.textContent;
+        if(k==='t1'){ label='💡 Tipp 1'; }
+        if(k==='t2'){ const left=h.t1?Math.ceil(TIP2_DELAY-(now-h.t1)/1000):null; can=done||h.t2||(h.t1&&left<=0); label=can?'💡 Tipp 2':(h.t1?`💡 Tipp 2 (noch ${left} s)`:'💡 Tipp 2 (erst nach Tipp 1)'); }
+        if(k==='sol'){ const left=prev?Math.ceil(SOL_DELAY-(now-prev)/1000):null; can=done||h.sol||(prev&&left<=0); label=can?'✔ Lösung':(prev?`✔ Lösung (noch ${left} s)`:`✔ Lösung (erst nach Tipp ${step<3?2:1})`); }
+        b.disabled=!can; b.textContent=label; b.classList.toggle('open',!!h[k]);
+        const box=el.querySelector(`[data-box="${step}-${k}"]`); if(box) box.classList.toggle('hidden',!h[k]);
+      });
+    });
+  });
+}
+setInterval(tick,1000);
+
+function updateProgress(){
+  const n=ALL.filter(t=>ts(t).solved).length;
+  document.getElementById('pbar').style.width=(100*n/ALL.length)+'%';
+  document.getElementById('ptext').textContent=`${n} von ${ALL.length} Aufgaben vollständig gelöst`;
+}
+
+/* ================================================================== */
+/* Auswertung                                                          */
+/* ================================================================== */
+function stats(tasks){
+  const s={total:tasks.length,self:0,tip:0,sol:0,s1:0,s2:0,tips:0,sols:0};
+  tasks.forEach(t=>{ const st=ts(t);
+    if(st.solved) s[st.solved]++;
+    if(st.s1.done) s.s1++; if(st.s2.done) s.s2++;
+    [1,2,3].forEach(i=>{ const h=st['h'+i]; s.tips+=(h.t1?1:0)+(h.t2?1:0); s.sols+=h.sol?1:0; }); });
+  return s;
+}
+function verdict(){
+  const s=stats(ALL), score=(s.self*3+s.tip*2+s.sol)/(s.total*3);
+  if(score>=.85) return {icon:'🏆',title:'Ausgezeichnet!',text:'Du stellst Terme mit mehreren Variablen sicher auf.'};
+  if(score>=.65) return {icon:'🥇',title:'Gut gemacht!',text:'Du hast den Dreh raus – schau dir die Aufgaben mit Tipps noch einmal an.'};
+  if(score>=.4)  return {icon:'🌿',title:'Solide Grundlage',text:'Übe besonders die Aufgaben, bei denen du Tipps oder Lösungen gebraucht hast.'};
+  return {icon:'🍍',title:'Dranbleiben!',text:'Bearbeite die offenen Aufgaben – die Tipps helfen dir Schritt für Schritt.'};
+}
+function elapsed(){ const m=Math.round((Date.now()-state.start)/60000); return m<60?`${m} min`:`${Math.floor(m/60)} h ${m%60} min`; }
+function escapeHtml(s){ return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function statusText(st){ return st.solved==='self'?'✓ selbst gelöst':st.solved==='tip'?'✓ mit Tipp':st.solved==='sol'?'✓ mit Lösungshilfe':st.s2.done?'Schritt 1–2 erledigt':st.s1.done?'Schritt 1 erledigt':'offen'; }
+function varText(t,st){ return st.s1.map?Object.keys(t.vars).map(c=>`${st.s1.map[c]} = ${t.vars[c]}`).join('; '):''; }
+
+function renderResult(){
+  document.documentElement.style.setProperty('--accent','#1d2228');
+  document.documentElement.style.setProperty('--accent-soft','#efe9dc');
+  const rows=PARTS.map(p=>{ const s=stats(p.tasks); return `<tr><td>${p.title}</td><td class="n">${s.s1}</td><td class="n">${s.s2}</td><td class="n"><b>${s.self+s.tip+s.sol} / ${s.total}</b></td><td class="n">${s.self}</td><td class="n">${s.tip}</td><td class="n">${s.sol}</td></tr>`; }).join('');
+  const s=stats(ALL), v=verdict();
+  const list=ALL.map(t=>{ const st=ts(t);
+    return `<tr><td>${t.id} ${t.title}</td><td style="font-size:14px">${escapeHtml(varText(t,st))||'–'}</td><td class="mono">${st.s3.inp?escapeHtml(st.s3.inp):'–'}</td><td>${statusText(st)}</td></tr>`; }).join('');
+  main.innerHTML=`
+    <section class="panel">
+      <h2>Auswertung${state.name?': '+escapeHtml(state.name):''}</h2>
+      <div class="verdict"><div class="big">${v.icon}</div><div><h3>${v.title}</h3><div>${v.text}</div></div></div>
+      <table>
+        <thead><tr><th>Teil</th><th>① Variablen</th><th>② Teilterme</th><th>③ Gelöst</th><th>selbst</th><th>mit Tipp</th><th>mit Lösung</th></tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr><td><b>Gesamt</b></td><td class="n">${s.s1}</td><td class="n">${s.s2}</td><td class="n"><b>${s.self+s.tip+s.sol} / ${s.total}</b></td><td class="n">${s.self}</td><td class="n">${s.tip}</td><td class="n">${s.sol}</td></tr></tfoot>
+      </table>
+      <p class="legend">Tipps genutzt: ${s.tips} · Lösungen angesehen: ${s.sols} · Bearbeitungszeit seit Start: ${elapsed()}</p>
+      <div class="row-btns">
+        <button class="btn check" id="copy" style="background:#1d2228">Ergebnis kopieren</button>
+        <button class="btn danger" id="reset">Alles zurücksetzen</button>
+      </div>
+      <div id="copyarea"></div>
+    </section>
+    <section class="panel">
+      <h2>Deine Terme</h2>
+      <table><thead><tr><th>Aufgabe</th><th>Variablen</th><th>Gesamtterm</th><th>Status</th></tr></thead><tbody>${list}</tbody></table>
+    </section>`;
+  document.getElementById('copy').onclick=copyResult;
+  const r=document.getElementById('reset'); let armed=false;
+  r.onclick=()=>{
+    if(!armed){ armed=true; r.textContent='Wirklich alles löschen? Nochmal klicken'; setTimeout(()=>{armed=false; r.textContent='Alles zurücksetzen';},4000); return; }
+    state={v:2,start:Date.now(),name:state.name,tab:'A',tasks:{}}; save(); renderTabs(); renderMain(); updateProgress();
+  };
+}
+function resultText(){
+  const s=stats(ALL), v=verdict();
+  let txt=`Terme mit mehreren Variablen aufstellen – Klasse 8\nName: ${state.name||'–'}\nErgebnis: ${v.title} (${s.self+s.tip+s.sol}/${s.total} gelöst; selbst ${s.self}, mit Tipp ${s.tip}, mit Lösungshilfe ${s.sol})\nTipps: ${s.tips} · Lösungen angesehen: ${s.sols} · Zeit: ${elapsed()}\n\n`;
+  ALL.forEach(t=>{ const st=ts(t); txt+=`${t.id} ${t.title}: ${st.s3.inp||'–'}  [${statusText(st)}]${st.s1.map?`\n   Variablen: ${varText(t,st)}`:''}\n`; });
+  return txt;
+}
+async function copyResult(){
+  const txt=resultText(), area=document.getElementById('copyarea');
+  try{ await navigator.clipboard.writeText(txt); area.innerHTML='<p class="legend">✓ Ergebnis in die Zwischenablage kopiert – du kannst es jetzt z. B. in eine Nachricht an deine Lehrkraft einfügen.</p>'; }
+  catch(e){ area.innerHTML='<p class="legend">Kopieren ging nicht automatisch – markiere den Text und kopiere ihn selbst:</p><textarea class="copyfallback" readonly></textarea>'; const ta=area.querySelector('textarea'); ta.value=txt; ta.focus(); ta.select(); }
+}
+
+/* ================================================================== */
+/* Start                                                               */
+/* ================================================================== */
+const nameInp=document.getElementById('name');
+nameInp.value=state.name||'';
+nameInp.addEventListener('input',()=>{ state.name=nameInp.value; save(); });
+renderTabs(); renderMain(); updateProgress();
+</script>
+</body>
+</html>
